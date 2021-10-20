@@ -8,6 +8,10 @@ class Group(models.Model):
     average_score = models.DecimalField(max_digits=3, decimal_places=1, null=True)     # Средний балл
 
 
+    def __str__(self):
+        return f'{self.name}, Number of students: {self.number_of_students}, Average score of group: {self.average_score}'
+
+
     @classmethod
     def generate_groups(cls, count):
         faker = Faker()

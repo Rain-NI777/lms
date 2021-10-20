@@ -73,7 +73,7 @@ def create_student(request):
         form = StudentCreateForm(request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse('students-list'))
+            return HttpResponseRedirect(reverse('students:list'))
 
     elif request.method == 'GET':
         form = StudentCreateForm()
@@ -96,7 +96,7 @@ def update_student(request, pk):
         form = StudentCreateForm(request.POST, instance=student)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse('students-list'))
+            return HttpResponseRedirect(reverse('students:list'))
 
     elif request.method == 'GET':
         form = StudentCreateForm(instance=student)

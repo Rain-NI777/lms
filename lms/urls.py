@@ -24,8 +24,7 @@ from groups.models import Group
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('hello/', hello),
     path('students/', include('students.urls')),
-    path('groups/', Group),
-    path('teachers/', get_teachers),
+    path('groups/', include('groups.urls')),
+    path('teachers/', include('teachers.urls')),
 ]

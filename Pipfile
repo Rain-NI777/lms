@@ -13,6 +13,7 @@ flake8-builtins = "*"
 flake8-import-order = "*"
 pep8-naming = "*"
 webargs = "*"
+django-debug-toolbar = "*"
 
 [dev-packages]
 

@@ -1,12 +1,15 @@
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from webargs import fields
 from webargs import djangoparser
 from django.core.exceptions import BadRequest
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
 from teachers.models import Teacher
 from teachers.utils import format_records
-
+from teachers.forms import TeacherCreateForm
 
 
 parser = djangoparser.DjangoParser()
@@ -53,3 +56,47 @@ def get_teachers(request, params):
 
     result = format_records(teachers)
     return HttpResponse(result)
+
+@csrf_exempt
+def create_teacher(request):
+
+    if request.method == 'POST':
+        form = TeacherCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('teachers:list'))
+
+    elif request.method == 'GET':
+        form = TeacherCreateForm()
+    form_html = f"""
+    <form method="POST">
+      {form.as_p()}
+      <input type="submit" value="Create">
+    </form>
+    """
+
+    return HttpResponse(form_html)
+
+
+@csrf_exempt
+def update_teacher(request, pk):
+
+    teacher = get_object_or_404(Teacher, id=pk)
+
+    if request.method == 'POST':
+        form = TeacherCreateForm(request.POST, instance=teacher)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('teachers:list'))
+
+    elif request.method == 'GET':
+        form = TeacherCreateForm(instance=teacher)
+
+    form_html = f"""
+    <form method="POST">
+      {form.as_p()}
+      <input type="submit" value="Save">
+    </form>
+    """
+
+    return HttpResponse(form_html)

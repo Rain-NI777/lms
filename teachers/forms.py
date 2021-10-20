@@ -1,12 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm, TextInput
-from students.models import Student
+from teachers.models import Teacher
 
 
-class StudentBaseForm(ModelForm):
+class TeacherBaseForm(ModelForm):
     class Meta:
-        model = Student
-        fields = ['first_name', 'last_name', 'birthdate', 'email', 'phone_number']
+        model = Teacher
+        fields = ['first_name', 'last_name', 'classroom_number', 'phone_number', 'email']
 
         widgets = {'phone_number': TextInput(attrs={'pattern': '\d{10,14}'})}
 
@@ -35,10 +35,10 @@ class StudentBaseForm(ModelForm):
         return cleaned_data
 
 
-class StudentCreateForm(StudentBaseForm):
+class TeacherCreateForm(TeacherBaseForm):
     pass
 
 
-class StudentUpdateForm(StudentBaseForm):
-    class Meta(StudentBaseForm.Meta):
-        fields = ['first_name', 'last_name', 'email', 'phone_number', 'birthdate']
+class TeacherUpdateForm(TeacherBaseForm):
+    class Meta(TeacherBaseForm.Meta):
+        fields = ['first_name', 'last_name', 'classroom_number', 'phone_number', 'email']
