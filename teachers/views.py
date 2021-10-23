@@ -14,6 +14,7 @@ from teachers.forms import TeacherCreateForm
 
 parser = djangoparser.DjangoParser()
 
+
 @parser.error_handler
 def handle_error(error, req, schema, *, error_status_code, error_headers):
     raise BadRequest(error.messages)
@@ -76,7 +77,6 @@ def create_teacher(request):
     """
 
     return HttpResponse(form_html)
-
 
 @csrf_exempt
 def update_teacher(request, pk):

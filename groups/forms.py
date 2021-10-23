@@ -14,15 +14,6 @@ class GroupBaseForm(ModelForm):
     def normalize_name(name):
         return name.lower().strip().capitalize()
 
-   # def clean(self):
-       # cleaned_data = super().clean()
-
-      #  name = cleaned_data['first_name']
-       # if first_name == last_name:
-       #     raise ValidationError('First and last names can\'t be equal')
-
-    #    return cleaned_data
-
 
 class GroupCreateForm(GroupBaseForm):
     pass
