@@ -15,16 +15,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from students.views import hello
-from teachers.views import get_teachers
-from groups.models import Group
-
+from students.views import index
 
 
 
 urlpatterns = [
+    path('', index, name='index'),
+    path('index/', index),
     path('admin/', admin.site.urls),
     path('students/', include('students.urls')),
     path('groups/', include('groups.urls')),
     path('teachers/', include('teachers.urls')),
 ]
+
+#handler404 = 'lms.views.page_not_found'

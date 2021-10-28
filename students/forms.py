@@ -46,6 +46,9 @@ class StudentBaseForm(ModelForm):
 class StudentCreateForm(StudentBaseForm):
     pass
 
+class StudentEditForm(StudentBaseForm):
+    class Meta(StudentBaseForm.Meta):
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'birthdate']
 
 class StudentUpdateForm(StudentBaseForm):
     class Meta(StudentBaseForm.Meta):

@@ -32,6 +32,7 @@ class Student(models.Model):
                 first_name=faker.first_name(),
                 last_name=faker.last_name(),
                 email=faker.email(),
+                phone_number=faker.phone_number(),
                 birthdate=faker.date_time_between(start_date="-30y", end_date="-18y"),
                 enroll_date=faker.date_time_between(start_date="-30y", end_date="-18y"),
                 graduate_date=faker.date_time_between(start_date="-30y", end_date="-18y"),
