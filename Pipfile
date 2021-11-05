@@ -16,9 +16,11 @@ webargs = "*"
 django-debug-toolbar = "*"
 darker = "*"
 django-crispy-forms = "*"
-bootstrap-py = "*"
+django-bootstrap-v5 = "*"
+django-phonenumber-field = "*"
+phonenumbers = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.8.3"

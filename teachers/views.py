@@ -7,42 +7,33 @@ from django.core.exceptions import BadRequest
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from teachers.models import Teacher
-from teachers.utils import format_records
+from teachers.forms import TeacherBaseForm
 from teachers.forms import TeacherCreateForm
+from students.models import Course
+from teachers.models import Teacher
 
 
 parser = djangoparser.DjangoParser()
 
 
 @parser.error_handler
-def handle_error(error, req, schema, *, error_status_code, error_headers):
+def handle_error(error):
     raise BadRequest(error.messages)
 
 @parser.use_args(
     {
-        "first_name": fields.Str(
-            required=False,
-        ),
-        "last_name": fields.Str(
-            required=False,
-        ),
-        "classroom_number": fields.Str(
-            required=False,
-        ),
-        "phone_number": fields.Str(
-            required=False,
-        ),
-        "email": fields.Str(
-            required=False,
-        ),
+        "first_name": fields.Str(required=False),
+        "last_name": fields.Str(required=False),
+        "course": fields.Str(required=False),
+        "phone_number": fields.Str(required=False),
+        "email": fields.Str(required=False),
         "text": fields.Str(required=False),
     },
     location="query",
 )
 def get_teachers(request, params):
-
-    teachers = Teacher.objects.all().order_by('-id')
+    teachers = Teacher.objects.all().order_by('id')
+    courses = Course.objects.all()
     text_fields = ['first_name', 'last_name', 'phone_number', 'email']
 
     for param_name, param_value in params.items():
@@ -52,31 +43,41 @@ def get_teachers(request, params):
                 for field in text_fields:
                     or_filter |= Q(**{f'{field}__contains': param_value})
                 teachers = teachers.filter(or_filter)
+            elif param_name == 'course':
+                teachers = teachers.filter(course__id__contains=params['course'])
             else:
                 teachers = teachers.filter(**{param_name: param_value})
 
-    result = format_records(teachers)
-    return HttpResponse(result)
+    return render(
+        request=request,
+        template_name="teachers_table.html",
+        context={"teachers_list": teachers,
+                 "courses_list": courses}
+    )
+
+
+def delete_teacher(request, pk):
+    teacher = get_object_or_404(Teacher, id=pk)
+    teacher.delete()
+
+    return HttpResponseRedirect(reverse("students:teachers"))
+
 
 @csrf_exempt
 def create_teacher(request):
-
-    if request.method == 'POST':
-        form = TeacherCreateForm(request.POST)
+    if request.method == "POST":
+        form = TeacherBaseForm(request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse('teachers:list'))
+            return HttpResponseRedirect(reverse("students:teachers"))
 
-    elif request.method == 'GET':
-        form = TeacherCreateForm()
-    form_html = f"""
-    <form method="POST">
-      {form.as_p()}
-      <input type="submit" value="Create">
-    </form>
-    """
+    elif request.method == "GET":
+        form = TeacherBaseForm()
 
-    return HttpResponse(form_html)
+    return render(
+        request=request, template_name="teachers_create.html",
+        context={"form": form}
+    )
 
 @csrf_exempt
 def update_teacher(request, pk):

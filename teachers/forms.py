@@ -3,12 +3,10 @@ from django.forms import ModelForm, TextInput
 from teachers.models import Teacher
 
 
-class TeacherBaseForm(ModelForm):
+class PersonBaseForm(ModelForm):
     class Meta:
         model = Teacher
-        fields = ['first_name', 'last_name', 'classroom_number', 'phone_number', 'email']
-
-        widgets = {'phone_number': TextInput(attrs={'pattern': '\d{10,14}'})}
+        fields = ['first_name', 'last_name', 'phone_number', 'email']
 
     @staticmethod
     def normalize_name(name):
@@ -35,10 +33,20 @@ class TeacherBaseForm(ModelForm):
         return cleaned_data
 
 
-class TeacherCreateForm(TeacherBaseForm):
+class TeacherBaseForm(PersonBaseForm):
+    class Meta:
+        model = Teacher
+        fields = ['first_name', 'last_name', 'phone_number', 'email']
+
+        widgets = {
+            "phone_number": TextInput(attrs={"pattern": "\d{10,14}", "label": ""})
+        }
+
+
+class TeacherCreateForm(PersonBaseForm):
     pass
 
 
-class TeacherUpdateForm(TeacherBaseForm):
+class TeacherUpdateForm(PersonBaseForm):
     class Meta(TeacherBaseForm.Meta):
-        fields = ['first_name', 'last_name', 'classroom_number', 'phone_number', 'email']
+        fields = ['first_name', 'last_name', 'phone_number', 'email']

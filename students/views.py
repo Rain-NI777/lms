@@ -1,48 +1,48 @@
+from django.contrib.auth.views import LoginView
 from django.db.models import Q
+from django.forms.utils import ErrorList
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse
+
+from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from webargs import fields
+
 from students.forms import StudentCreateForm
-from teachers.forms import TeacherBaseForm
-from students.models import Student
-from django.core.exceptions import BadRequest
+from teachers.forms import TeacherCreateForm
+from students.models import *
+from students.utils import format_records
+from django.core.exceptions import BadRequest, ValidationError
 from webargs import djangoparser
+from django.contrib.auth.models import User
+
+from django.views.generic import TemplateView, CreateView, UpdateView
 
 
-
-
-def hello(request):
-    return HttpResponse('SUCCESS')
-
-
-def index(request):
-    return render(
-        request=request,
-        template_name="index.html",
-    )
+class IndexPage(TemplateView):
+    template_name = "index.html"
+    extra_context = {'name': 'Igor'}
 
 
 parser = djangoparser.DjangoParser()
 
 
-#@parser.error_handler
-#def handle_error(error, req, schema, *, error_status_code, error_headers):
-  #  raise BadRequest(error.messages)
+@parser.error_handler
+def handle_error(error, req, schema, *, error_status_code, error_headers):
+    raise BadRequest(error.messages)
 
 
 @parser.use_args(
     {
-        "first_name": fields.Str(
-            required=False,
-        ),
+        "first_name": fields.Str(required=False),
         "text": fields.Str(required=False),
+        "course": fields.Str(required=False),
     },
     location="query",
 )
 def get_students(request, params):
     students = Student.objects.all().order_by("id")
+    courses = Course.objects.all()
 
     text_fields = ["first_name", "last_name", "email"]
 
@@ -53,58 +53,66 @@ def get_students(request, params):
                 for field in text_fields:
                     or_filter |= Q(**{f"{field}__contains": param_value})
                 students = students.filter(or_filter)
+            elif param_name == 'course':
+                students = students.filter(course__id__contains=params['course'])
             else:
                 students = students.filter(**{param_name: param_value})
+
 
     return render(
         request=request,
         template_name="students_table.html",
-        context={"students_list": students},
+        context={"students_list": students,
+                 "courses_list": courses}
     )
 
 
-def create_student(request):
-    if request.method == "POST":
-        form = StudentCreateForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse("students:list"))
+class CreateStudent(CreateView):
+    template_name = "students_create.html"
+    fields = "__all__"
+    model = Student
+    initial = {
+        "first_name": "default",
+        "last_name": "default",
+    }
+    success_url = reverse_lazy("students:list")
 
-    elif request.method == "GET":
-        form = StudentCreateForm()
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        first_name = form.cleaned_data["first_name"]
+        last_name = form.cleaned_data["last_name"]
+        if first_name == last_name:
+            form._errors["first_name"] = ErrorList(["dsadas"])
+            form._errors["last_name"] = ErrorList(
+                [u"You already have an email with that name man."])
+            return super().form_invalid(form)
+        return super().form_valid(form)
 
-    return render(
-        request=request, template_name="students_create.html", context={"form": form}
-    )
 
-
-def edit_student(request, pk):
+def delete_student(request, pk):
     student = get_object_or_404(Student, id=pk)
-    if request.method == "POST":
-        form_edit = StudentCreateForm(request.POST, instance=student)
-        if form_edit.is_valid():
-            form_edit.save()
-            return HttpResponseRedirect(reverse("students:list"))
+    student.delete()
 
-    elif request.method == "GET":
-        form_edit = StudentCreateForm(instance=student)
+    return HttpResponseRedirect(reverse("students:list"))
 
-    return render(
-        request=request, template_name="students_edit.html", context={"form": form_edit}
-    )
 
+class UpdateStudent(UpdateView):
+    model = Student
+    template_name = "students_update.html"
+    fields = "__all__"
+    success_url = reverse_lazy("students:list")
 
 @csrf_exempt
 def update_student(request, pk):
     student = get_object_or_404(Student, id=pk)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = StudentCreateForm(request.POST, instance=student)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse('students:list'))
+            return HttpResponseRedirect(reverse("students:list"))
 
-    elif request.method == 'GET':
+    elif request.method == "GET":
         form = StudentCreateForm(instance=student)
 
     form_html = f"""
@@ -117,47 +125,7 @@ def update_student(request, pk):
     return HttpResponse(form_html)
 
 
-def delete_student(request, pk):
-    student = get_object_or_404(Student, id=pk)
-    student.delete()
-
-    return HttpResponseRedirect(reverse("students:list"))
-
-
-@csrf_exempt
-def create_teacher(request):
-    if request.method == "POST":
-        form = TeacherBaseForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse("students:list"))
-
-    elif request.method == "GET":
-        form = TeacherBaseForm()
-
-    return render(
-        request=request, template_name="teacher_create.html", context={"form": form}
-    )
-
-
 def test_view(request):
-    # 1.
-    # my_student_1 = Course.objects.first()
-    # course = Course.objects.get(id="482fdb3c-3a7f-4750-913a-65a8b091a7ab")
-    # print(type(my_student.course))
-    # print(type(my_student_1.course))
-    # print(type(my_student.course))
-    # print(course.)
-    # students = Student.objects.filter(course__name__contains="In")
-    # print(Student.objects.filter(course=))
-    # print(Student.objects)
-    # print(type(course.students))
-
-    # for i in range(100):
-    #     new_color = Color()
-    #     new_color.name = "red"
-    #     new_color.save()
-
     data_to_save = []
     course = Course.objects.get(id="482fdb3c-3a7f-4750-913a-65a8b091a7ab")
 
@@ -168,18 +136,33 @@ def test_view(request):
         new_student.email = "test"
         new_student.course = course
         data_to_save.append(new_student)
-        # new_color.save()
 
     Student.objects.bulk_create(data_to_save)
-
 
     student = Student.objects.filter(course__room__color__name__contains="red")
 
     return HttpResponse(student)
 
 
-#def handler404(request, exeption, template_name='404.html'):
-   # response = render_to_response(template_name)
-  #  response.status_code = 404
-   # return response
+def search_view(request):
+    search_text = request.GET.get('search')
+    text_fields = ["first_name", "last_name", "email"]
+    request.session["last_search_text"] = search_text
+    print(request.GET)
 
+    if search_text:
+        or_filter = Q()
+        for field in text_fields:
+            or_filter |= Q(**{f"{field}__icontains": search_text})
+        students = Student.objects.filter(or_filter)
+    else:
+        students = Student.objects.all().order_by("id")
+
+    return render(
+        request=request,
+        template_name="students_table.html",
+        context={"students_list": students},
+    )
+
+class LoginStudent(LoginView):
+    pass
