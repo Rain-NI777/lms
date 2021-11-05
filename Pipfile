@@ -8,8 +8,19 @@ django = "==3.2.7"
 faker = "*"
 ipython = "*"
 django-extensions = "*"
+flake8 = "*"
+flake8-builtins = "*"
+flake8-import-order = "*"
+pep8-naming = "*"
+webargs = "*"
+django-debug-toolbar = "*"
+darker = "*"
+django-crispy-forms = "*"
+django-bootstrap-v5 = "*"
+django-phonenumber-field = "*"
+phonenumbers = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.8"
+python_version = "3.8.3"
