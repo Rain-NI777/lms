@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from webargs import fields
 from webargs import djangoparser
+from webargs.djangoparser import use_args, use_kwargs
 from django.core.exceptions import BadRequest
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
@@ -20,16 +21,13 @@ parser = djangoparser.DjangoParser()
 def handle_error(error):
     raise BadRequest(error.messages)
 
-@parser.use_args(
+@use_args(
     {
-        "first_name": fields.Str(required=False),
-        "last_name": fields.Str(required=False),
-        "course": fields.Str(required=False),
-        "phone_number": fields.Str(required=False),
-        "email": fields.Str(required=False),
-        "text": fields.Str(required=False),
+    "text": fields.Str(
+        required=False
+    )
     },
-    location="query",
+    location="query"
 )
 def get_teachers(request, params):
     teachers = Teacher.objects.all().order_by('id')
@@ -54,13 +52,6 @@ def get_teachers(request, params):
         context={"teachers_list": teachers,
                  "courses_list": courses}
     )
-
-
-def delete_teacher(request, pk):
-    teacher = get_object_or_404(Teacher, id=pk)
-    teacher.delete()
-
-    return HttpResponseRedirect(reverse("students:teachers"))
 
 
 @csrf_exempt
@@ -101,3 +92,10 @@ def update_teacher(request, pk):
     """
 
     return HttpResponse(form_html)
+
+
+def delete_teacher(request, pk):
+    teacher = get_object_or_404(Teacher, id=pk)
+    teacher.delete()
+
+    return HttpResponseRedirect(reverse("students:teachers"))

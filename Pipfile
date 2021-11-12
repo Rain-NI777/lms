@@ -19,8 +19,9 @@ django-crispy-forms = "*"
 django-bootstrap-v5 = "*"
 django-phonenumber-field = "*"
 phonenumbers = "*"
+pillow = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.8.3"
+python_version = "3.9.1"

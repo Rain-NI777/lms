@@ -1,6 +1,6 @@
 from django.db import models
 from faker import Faker
-#from students.models import Person
+from phonenumber_field.modelfields import PhoneNumberField
 from teachers.validators import no_blacklist_email
 
 
@@ -8,7 +8,7 @@ from teachers.validators import no_blacklist_email
 class Teacher(models.Model):
     first_name = models.CharField(max_length=80, null=False)
     last_name = models.CharField(max_length=80, null=False)
-    phone_number = models.CharField(max_length=80, null=False)
+    phone_number = PhoneNumberField(unique=True, null=True)
     email = models.EmailField(max_length=120, null=True, unique=True, validators=[no_blacklist_email])
 
 

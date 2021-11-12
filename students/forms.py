@@ -34,7 +34,8 @@ class PersonBaseForm(ModelForm):
 
 
 class StudentCreateForm(PersonBaseForm):
-    pass
+    class Meta(PersonBaseForm.Meta):
+        fields = ["avatar", "first_name", "last_name", "course", "resume", "email", "phone_number", "birthdate"]
 
 
 class StudentUpdateForm(PersonBaseForm):

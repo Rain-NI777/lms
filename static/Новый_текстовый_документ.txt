@@ -1,3 +1,34 @@
+"""class UpdateStudent(UpdateView):
+    model = Student
+    template_name = "students_update.html"
+    fields = "__all__"
+    success_url = reverse_lazy("students:list")"""
+
+"""@csrf_exempt
+def update_student(request, pk):
+    student = get_object_or_404(Student, id=pk)
+
+    if request.method == "POST":
+        form = StudentCreateForm(request.POST, instance=student)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("students:list"))
+
+    elif request.method == "GET":
+        form = StudentCreateForm(instance=student)
+
+    form_html = f"""
+    #<form method="POST">
+   #   {form.as_p()}
+    #  <input type="submit" value="Save">
+    #</form>
+    """
+
+    return HttpResponse(form_html)"""
+
+_____________________________________________
+
+
 {% extends "index.html" %}
 {% block content %}
 <div class="nav-item dropdown">
@@ -32,12 +63,12 @@
         <tbody>
         {% for student in students_list %}
             <tr>
-                <th scope="row">{{ student.id }}</th>
-                <td>
+                 <td>
             {% if student.avatar %}
               <img src="{{ student.avatar.url }}" width="70" height="80" >
             {% endif %}
           </td>
+                <th scope="row">{{ student.id }}</th>
                 <td>{{ student.first_name }}</td>
                 <td>{{ student.last_name }}</td>
                 <td>{{ student.course }}</td>

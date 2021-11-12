@@ -21,7 +21,9 @@ from students.views import (
     delete_student,
     test_view,
     search_view,
-    CreateStudent, UpdateStudent, LoginStudent
+    create_student,
+    update_student,
+    LoginStudent,
 )
 
 app_name = "students"
@@ -29,11 +31,10 @@ app_name = "students"
 urlpatterns = [
     path("", get_students, name="list"),
     path("teachers/", get_teachers, name="teachers"),
-    path("create/", CreateStudent.as_view(), name="create"),
-    path("update/<int:pk>/", UpdateStudent.as_view(), name="update"),
+    path("create/", create_student, name="create"),
+    path("update/<int:pk>/", update_student, name="update"),
     path("create-teacher/", create_teacher, name="create-teacher"),
     path("delete/<int:pk>/", delete_student, name="delete"),
-    #path("delete-teacher/<int:pk>/", delete_teacher, name="delete-teacher"),
     path("test/", test_view, name="test"),
     path("search/", search_view, name="search"),
     path("login/", LoginStudent.as_view(), name="login")

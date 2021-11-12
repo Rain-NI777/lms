@@ -67,26 +67,22 @@ def get_students(request, params):
     )
 
 
-class CreateStudent(CreateView):
-    template_name = "students_create.html"
-    fields = "__all__"
-    model = Student
-    initial = {
-        "first_name": "default",
-        "last_name": "default",
-    }
-    success_url = reverse_lazy("students:list")
+@csrf_exempt
+def create_student(request):
 
-    def form_valid(self, form):
-        self.object = form.save(commit=False)
-        first_name = form.cleaned_data["first_name"]
-        last_name = form.cleaned_data["last_name"]
-        if first_name == last_name:
-            form._errors["first_name"] = ErrorList(["dsadas"])
-            form._errors["last_name"] = ErrorList(
-                [u"You already have an email with that name man."])
-            return super().form_invalid(form)
-        return super().form_valid(form)
+    if request.method == 'POST':
+        form = StudentCreateForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('students:list'))
+
+    form = StudentCreateForm()
+
+    return render(
+        request=request,
+        template_name='students_create.html',
+        context={'create_form': form}
+    )
 
 
 def delete_student(request, pk):
@@ -96,33 +92,24 @@ def delete_student(request, pk):
     return HttpResponseRedirect(reverse("students:list"))
 
 
-class UpdateStudent(UpdateView):
-    model = Student
-    template_name = "students_update.html"
-    fields = "__all__"
-    success_url = reverse_lazy("students:list")
-
 @csrf_exempt
 def update_student(request, pk):
+
     student = get_object_or_404(Student, id=pk)
 
     if request.method == "POST":
-        form = StudentCreateForm(request.POST, instance=student)
+        form = StudentCreateForm(request.POST, request.FILES, instance=student)
         if form.is_valid():
             form.save()
             return HttpResponseRedirect(reverse("students:list"))
 
-    elif request.method == "GET":
-        form = StudentCreateForm(instance=student)
+    form = StudentCreateForm(instance=student)
 
-    form_html = f"""
-    <form method="POST">
-      {form.as_p()}
-      <input type="submit" value="Save">
-    </form>
-    """
-
-    return HttpResponse(form_html)
+    return render(
+        request=request,
+        template_name='students_update.html',
+        context={'update_form': form}
+    )
 
 
 def test_view(request):
