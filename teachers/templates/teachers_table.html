@@ -1,0 +1,50 @@
+{% extends "index.html" %}
+{% block content %}
+<div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" type="button" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Select Course
+                    </a>
+
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+
+                        {% for course in courses_list %}
+                            <a class="dropdown-item" href="http://127.0.0.1:8000/teachers/?course={{ course.id }}">{{ course.name }}</a>
+                        {% endfor %}
+                    </div>
+   </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">First name</th>
+            <th scope="col">Last name</th>
+            <th scope="col">Course</th>
+            <th scope="col">Phone number</th>
+            <th scope="col">Email</th>
+            <th scope="col">Delete</th>
+            <th scope="col">Edit</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for teacher in teachers_list %}
+            <tr>
+                <th scope="row">{{ teacher.id }}</th>
+                <td>{{ teacher.first_name }}</td>
+                <td>{{ teacher.last_name }}</td>
+                <td>{{ teacher.course }}</td>
+                <td>{{ teacher.phone_number }}</td>
+                <td>{{ teacher.email }}</td>
+                <td>
+                    <a type="button" class="btn btn-danger" href="">Delete
+                    </a>
+                </td>
+                <td>
+                    <a type="button" class="btn btn-success" href="">Edit
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+{% endblock %}
