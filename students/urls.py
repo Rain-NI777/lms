@@ -14,27 +14,32 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from teachers.views import create_teacher, get_teachers, delete_teacher
+from teachers.views import (
+    GetTeachers,
+    CreateTeacher,
+    UpdateTeacher,
+    DeleteTeacher,
+)
 
 from students.views import (
-    get_students,
-    delete_student,
+    GetStudents,
+    CreateStudent,
+    UpdateStudent,
+    DeleteStudent,
     test_view,
     search_view,
-    create_student,
-    update_student,
     LoginStudent,
 )
 
 app_name = "students"
 
 urlpatterns = [
-    path("", get_students, name="list"),
-    path("teachers/", get_teachers, name="teachers"),
-    path("create/", create_student, name="create"),
-    path("update/<int:pk>/", update_student, name="update"),
-    path("create-teacher/", create_teacher, name="create-teacher"),
-    path("delete/<int:pk>/", delete_student, name="delete"),
+    path("", GetStudents.as_view(), name="list"),
+    path("teachers/", GetTeachers.as_view(), name="teachers"),
+    path("create/", CreateStudent.as_view(), name="create"),
+    path("update/<int:pk>/", UpdateStudent.as_view(), name="update"),
+    path("create-teacher/", CreateTeacher.as_view(), name="create-teacher"),
+    path("delete/<int:pk>/", DeleteStudent.as_view(), name="delete"),
     path("test/", test_view, name="test"),
     path("search/", search_view, name="search"),
     path("login/", LoginStudent.as_view(), name="login")

@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'debug_toolbar',
     'phonenumber_field',
-
     'students',
     'groups',
     'teachers',

@@ -20,7 +20,6 @@ from students.views import IndexPage
 from django.conf.urls.static import static
 
 
-
 urlpatterns = [
     path("", IndexPage.as_view(), name="index"),
     path("admin/", admin.site.urls),

@@ -102,7 +102,7 @@ class Color(models.Model):
 
 class Invite(models.Model):
     id = models.UUIDField(
-        primary_key=True, unique=True, default=uuid.uuid4(), editable=False
+        primary_key=True, unique=True, default=uuid.uuid4, editable=False
     )
     inviter_student = models.ForeignKey("students.Student", null=True, on_delete=models.SET_NULL)
     course = models.ForeignKey("students.Course", null=True, on_delete=models.SET_NULL)

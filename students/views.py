@@ -14,9 +14,16 @@ from students.models import *
 from students.utils import format_records
 from django.core.exceptions import BadRequest, ValidationError
 from webargs import djangoparser
+from webargs.djangoparser import use_args
 from django.contrib.auth.models import User
 
-from django.views.generic import TemplateView, CreateView, UpdateView
+from django.views.generic import (
+    TemplateView,
+    CreateView,
+    UpdateView,
+    ListView,
+    DeleteView,
+)
 
 
 class IndexPage(TemplateView):
@@ -32,84 +39,102 @@ def handle_error(error, req, schema, *, error_status_code, error_headers):
     raise BadRequest(error.messages)
 
 
-@parser.use_args(
-    {
-        "first_name": fields.Str(required=False),
-        "text": fields.Str(required=False),
-        "course": fields.Str(required=False),
-    },
-    location="query",
-)
-def get_students(request, params):
-    students = Student.objects.all().order_by("id")
-    courses = Course.objects.all()
+class GetStudents(ListView):
+    template_name = "index.html"
+    login_url = reverse_lazy("students:login")
 
-    text_fields = ["first_name", "last_name", "email"]
-
-    for param_name, param_value in params.items():
-        if param_value:
-            if param_name == "text":
-                or_filter = Q()
-                for field in text_fields:
-                    or_filter |= Q(**{f"{field}__contains": param_value})
-                students = students.filter(or_filter)
-            elif param_name == 'course':
-                students = students.filter(course__id__contains=params['course'])
-            else:
-                students = students.filter(**{param_name: param_value})
-
-
-    return render(
-        request=request,
-        template_name="students_table.html",
-        context={"students_list": students,
-                 "courses_list": courses}
+    @use_args(
+        {
+            "first_name": fields.Str(required=False),
+            "text": fields.Str(required=False),
+            "course": fields.Str(required=False),
+        },
+        location="query",
     )
+    def get(self, request, params, *args, **kwargs):
+        students = Student.objects.all().order_by("id")
+        courses = Course.objects.all()
+
+        text_fields = ["first_name", "last_name", "email"]
+
+        for param_name, param_value in params.items():
+            if param_value:
+                if param_name == "text":
+                    or_filter = Q()
+                    for field in text_fields:
+                        or_filter |= Q(**{f"{field}__contains": param_value})
+                    students = students.filter(or_filter)
+                elif param_name == 'course':
+                    students = students.filter(course__id__contains=params['course'])
+                else:
+                    students = students.filter(**{param_name: param_value})
 
 
-@csrf_exempt
-def create_student(request):
+        return render(
+            request=request,
+            template_name="students_table.html",
+            context={"students_list": students,
+                    "courses_list": courses}
+        )
 
-    if request.method == 'POST':
-        form = StudentCreateForm(request.POST, request.FILES)
-        if form.is_valid():
+class CreateStudent(CreateView):
+    template_name = "students_create.html"
+    fields = "__all__"
+    model = Student
+    success_url = reverse_lazy("students:list")
+
+    @csrf_exempt
+    def get(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = StudentCreateForm(request.POST, request.FILES)
+            #if form.is_valid():
             form.save()
             return HttpResponseRedirect(reverse('students:list'))
 
-    form = StudentCreateForm()
+        form = StudentCreateForm()
 
-    return render(
-        request=request,
-        template_name='students_create.html',
-        context={'create_form': form}
-    )
-
-
-def delete_student(request, pk):
-    student = get_object_or_404(Student, id=pk)
-    student.delete()
-
-    return HttpResponseRedirect(reverse("students:list"))
+        return render(
+            request=request,
+            template_name='students_create.html',
+            context={'create_form': form}
+        )
 
 
-@csrf_exempt
-def update_student(request, pk):
+class UpdateStudent(UpdateView):
+    model = Student
+    template_name = "students_update.html"
+    fields = "__all__"
+    success_url = reverse_lazy("students:list")
 
-    student = get_object_or_404(Student, id=pk)
+    @csrf_exempt
+    def get(self, request, pk):
+        student = get_object_or_404(Student, id=pk)
 
-    if request.method == "POST":
-        form = StudentCreateForm(request.POST, request.FILES, instance=student)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse("students:list"))
+        if request.method == "POST":
+            form = StudentCreateForm(request.POST, instance=student)
+            if form.is_valid():
+                form.save()
+                return HttpResponseRedirect(reverse("students:list"))
 
-    form = StudentCreateForm(instance=student)
+        elif request.method == "GET":
+            form = StudentCreateForm(instance=student)
 
-    return render(
-        request=request,
-        template_name='students_update.html',
-        context={'update_form': form}
-    )
+        return render(
+            request=request,
+            template_name='students_update.html',
+            context={'update_form': form}
+        )
+
+
+class DeleteStudent(DeleteView):
+    fields = "__all__"
+    model = Student
+
+    def get(self, request, pk):
+        student = get_object_or_404(Student, id=pk)
+        student.delete()
+
+        return HttpResponseRedirect(reverse("students:list"))
 
 
 def test_view(request):
