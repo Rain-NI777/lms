@@ -18,7 +18,6 @@
             <th scope="col">Id</th>
             <th scope="col">First name</th>
             <th scope="col">Last name</th>
-            <th scope="col">Course</th>
             <th scope="col">Phone number</th>
             <th scope="col">Email</th>
             <th scope="col">Delete</th>
@@ -31,15 +30,14 @@
                 <th scope="row">{{ teacher.id }}</th>
                 <td>{{ teacher.first_name }}</td>
                 <td>{{ teacher.last_name }}</td>
-                <td>{{ teacher.course }}</td>
                 <td>{{ teacher.phone_number }}</td>
                 <td>{{ teacher.email }}</td>
                 <td>
-                    <a type="button" class="btn btn-danger" href="">Delete
+                    <a type="button" class="btn btn-danger" href="{% url "teachers:delete-teacher" pk=teacher.id %}">Delete
                     </a>
                 </td>
                 <td>
-                    <a type="button" class="btn btn-success" href="">Edit
+                    <a type="button" class="btn btn-success" href="{% url "teachers:update-teacher" pk=teacher.id %}">Edit
                     </a>
                 </td>
             </tr>

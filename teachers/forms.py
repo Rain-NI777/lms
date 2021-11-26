@@ -44,7 +44,9 @@ class TeacherBaseForm(PersonBaseForm):
 
 
 class TeacherCreateForm(PersonBaseForm):
-    pass
+    class Meta(PersonBaseForm.Meta):
+        model = Teacher
+        fields = ["first_name", "last_name", "phone_number", "email"]
 
 
 class TeacherUpdateForm(PersonBaseForm):

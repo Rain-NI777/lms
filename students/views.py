@@ -1,21 +1,25 @@
-from django.contrib.auth.views import LoginView
 from django.db.models import Q
-from django.forms.utils import ErrorList
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect
 
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode
 from webargs import fields
 
-from students.forms import StudentCreateForm
-from teachers.forms import TeacherCreateForm
+from students.forms import StudentCreateForm, RegistrationStudentForm
 from students.models import *
-from students.utils import format_records
-from django.core.exceptions import BadRequest, ValidationError
+from students.services.emails import send_registration_email
+from students.token_generator import TokenGenerator
+from django.core.exceptions import BadRequest
 from webargs import djangoparser
 from webargs.djangoparser import use_args
 from django.contrib.auth.models import User
+from django.contrib.auth import login
+from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 from django.views.generic import (
     TemplateView,
@@ -23,7 +27,11 @@ from django.views.generic import (
     UpdateView,
     ListView,
     DeleteView,
+    RedirectView,
 )
+
+
+parser = djangoparser.DjangoParser()
 
 
 class IndexPage(TemplateView):
@@ -31,15 +39,61 @@ class IndexPage(TemplateView):
     extra_context = {'name': 'Igor'}
 
 
-parser = djangoparser.DjangoParser()
+class StudentSignIn(TemplateView):
+    template_name = 'registration/sign_in.html'
+
+
+class LoginStudent(LoginView):
+    success_url = reverse_lazy('login')
+
+
+class LogoutStudent(LogoutView):
+    template_name = 'index.html'
+
+
+class RegistrationStudent(CreateView):
+    template_name = 'registration/registration.html'
+    form_class = RegistrationStudentForm
+    success_url = reverse_lazy('login')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.is_active = False
+        self.object.save()
+        send_registration_email(request=self.request,
+                                user_instance=self.object)
+        return super().form_valid(form)
+
+
+class ActivateUser(RedirectView):
+    url = reverse_lazy('index')
+
+    def get(self, request, uidb64, token, *args, **kwargs):
+        print(f"uidb64: {uidb64}")
+        print(f"token: {token}")
+
+        try:
+            user_pk = force_bytes(urlsafe_base64_decode(uidb64))
+            print(f"user_pk: {user_pk}")
+            current_user = User.objects.get(pk=user_pk)
+        except (User.DoesNotExist, ValueError, TypeError):
+            return HttpResponse("Wrong data")
+
+        if current_user and TokenGenerator().check_token(current_user, token):
+            current_user.is_active = True
+            current_user.save()
+
+            login(request, current_user)
+            return super().get(request, *args, **kwargs)
+        return HttpResponse("Wrong data")
 
 
 @parser.error_handler
-def handle_error(error, req, schema, *, error_status_code, error_headers):
+def handle_error(error):
     raise BadRequest(error.messages)
 
 
-class GetStudents(ListView):
+class GetStudents(LoginRequiredMixin, ListView):
     template_name = "index.html"
     login_url = reverse_lazy("students:login")
 
@@ -69,7 +123,6 @@ class GetStudents(ListView):
                 else:
                     students = students.filter(**{param_name: param_value})
 
-
         return render(
             request=request,
             template_name="students_table.html",
@@ -77,7 +130,8 @@ class GetStudents(ListView):
                     "courses_list": courses}
         )
 
-class CreateStudent(CreateView):
+
+class CreateStudent(LoginRequiredMixin, CreateView):
     template_name = "students_create.html"
     fields = "__all__"
     model = Student
@@ -87,7 +141,6 @@ class CreateStudent(CreateView):
     def get(self, request, *args, **kwargs):
         if request.method == 'POST':
             form = StudentCreateForm(request.POST, request.FILES)
-            #if form.is_valid():
             form.save()
             return HttpResponseRedirect(reverse('students:list'))
 
@@ -100,7 +153,7 @@ class CreateStudent(CreateView):
         )
 
 
-class UpdateStudent(UpdateView):
+class UpdateStudent(LoginRequiredMixin, UpdateView):
     model = Student
     template_name = "students_update.html"
     fields = "__all__"
@@ -126,7 +179,7 @@ class UpdateStudent(UpdateView):
         )
 
 
-class DeleteStudent(DeleteView):
+class DeleteStudent(LoginRequiredMixin, DeleteView):
     fields = "__all__"
     model = Student
 
@@ -175,6 +228,7 @@ def search_view(request):
         template_name="students_table.html",
         context={"students_list": students},
     )
+
 
 class LoginStudent(LoginView):
     pass

@@ -14,13 +14,6 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from teachers.views import (
-    GetTeachers,
-    CreateTeacher,
-    UpdateTeacher,
-    DeleteTeacher,
-)
-
 from students.views import (
     GetStudents,
     CreateStudent,
@@ -28,19 +21,15 @@ from students.views import (
     DeleteStudent,
     test_view,
     search_view,
-    LoginStudent,
 )
 
 app_name = "students"
 
 urlpatterns = [
     path("", GetStudents.as_view(), name="list"),
-    path("teachers/", GetTeachers.as_view(), name="teachers"),
     path("create/", CreateStudent.as_view(), name="create"),
     path("update/<int:pk>/", UpdateStudent.as_view(), name="update"),
-    path("create-teacher/", CreateTeacher.as_view(), name="create-teacher"),
     path("delete/<int:pk>/", DeleteStudent.as_view(), name="delete"),
     path("test/", test_view, name="test"),
     path("search/", search_view, name="search"),
-    path("login/", LoginStudent.as_view(), name="login")
 ]

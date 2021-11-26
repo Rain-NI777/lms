@@ -12,8 +12,8 @@ from teachers.forms import TeacherBaseForm
 from teachers.forms import TeacherCreateForm
 from students.models import Course
 from teachers.models import Teacher
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
-    TemplateView,
     CreateView,
     UpdateView,
     ListView,
@@ -29,7 +29,7 @@ def handle_error(error):
     raise BadRequest(error.messages)
 
 
-class GetTeachers(ListView):
+class GetTeachers(LoginRequiredMixin, ListView):
     template_name = "index.html"
     login_url = reverse_lazy("students:login")
 
@@ -66,22 +66,22 @@ class GetTeachers(ListView):
         )
 
 
-class CreateTeacher(CreateView):
-    template_name = "students_create.html"
+class CreateTeacher(LoginRequiredMixin, CreateView):
+    template_name = "teachers_create.html"
     fields = "__all__"
     model = Teacher
     success_url = reverse_lazy("teachers:list")
 
-    @csrf_exempt
-    def get(self, request):
+    #@csrf_exempt
+    def get(self, request, *args, **kwargs):
         if request.method == "POST":
             form = TeacherBaseForm(request.POST)
-            if form.is_valid():
-                form.save()
-                return HttpResponseRedirect(reverse("students:teachers"))
+            #if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("teachers:list"))
 
-        elif request.method == "GET":
-            form = TeacherBaseForm()
+        #elif request.method == "GET":
+        form = TeacherBaseForm()
 
         return render(
             request=request, template_name="teachers_create.html",
@@ -89,7 +89,7 @@ class CreateTeacher(CreateView):
         )
 
 
-class UpdateTeacher(UpdateView):
+class UpdateTeacher(LoginRequiredMixin, UpdateView):
     model = Teacher
     template_name = "teachers_update.html"
     fields = "__all__"
@@ -97,7 +97,6 @@ class UpdateTeacher(UpdateView):
 
     @csrf_exempt
     def get(self, request, pk):
-
         teacher = get_object_or_404(Teacher, id=pk)
 
         if request.method == 'POST':
@@ -109,17 +108,14 @@ class UpdateTeacher(UpdateView):
         elif request.method == 'GET':
             form = TeacherCreateForm(instance=teacher)
 
-        form_html = f"""
-        <form method="POST">
-        {form.as_p()}
-        <input type="submit" value="Save">
-        </form>
-        """
-
-        return HttpResponse(form_html)
+        return render(
+            request=request,
+            template_name='teachers_update.html',
+            context={'form': form}
+        )
 
 
-class DeleteTeacher(DeleteView):
+class DeleteTeacher(LoginRequiredMixin, DeleteView):
     fields = "__all__"
     model = Teacher
 
@@ -127,4 +123,4 @@ class DeleteTeacher(DeleteView):
         teacher = get_object_or_404(Teacher, id=pk)
         teacher.delete()
 
-        return HttpResponseRedirect(reverse("students:teachers"))
+        return HttpResponseRedirect(reverse("teachers:list"))

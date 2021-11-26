@@ -20,8 +20,19 @@ django-bootstrap-v5 = "*"
 django-phonenumber-field = "*"
 phonenumbers = "*"
 pillow = "*"
+social-auth-app-django = "*"
+django-admin-shortcuts = "*"
+django-inlinecss = "*"
+django-cors-headers = "*"
+whitenoise = "*"
+django-cached-authentication-middleware = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.9.1"
+
+[dev-packages]
+
+[pipenv]
+allow_prereleases = true

@@ -4,7 +4,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 from teachers.validators import no_blacklist_email
 
 
-
 class Teacher(models.Model):
     first_name = models.CharField(max_length=80, null=False)
     last_name = models.CharField(max_length=80, null=False)
@@ -17,6 +16,7 @@ class Teacher(models.Model):
 
     def full_name(self):
         return f'{self.first_name} {self.last_name}'
+
 
 @classmethod
 def generate_teachers(cls, count):

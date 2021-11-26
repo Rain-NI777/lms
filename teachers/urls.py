@@ -10,7 +10,7 @@ app_name = 'teachers'
 
 urlpatterns = [
     path('', GetTeachers.as_view(), name='list'),
-    path('new/', CreateTeacher.as_view(), name='create'),
-    path('update/<int:pk>/', UpdateTeacher.as_view(), name='update'),
-    path("delete/<int:pk>/", DeleteTeacher.as_view(), name="delete")
+    path('new/', CreateTeacher.as_view(), name='create-teacher'),
+    path('update/<int:pk>/', UpdateTeacher.as_view(), name='update-teacher'),
+    path('delete/<int:pk>/', DeleteTeacher.as_view(), name='delete-teacher')
 ]

@@ -12,19 +12,18 @@ from groups.utils import format_records
 from django.core.exceptions import BadRequest
 from webargs import djangoparser
 from webargs.djangoparser import use_args
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
-    TemplateView,
     CreateView,
     UpdateView,
     ListView,
-    DeleteView,
 )
 
 
 parser = djangoparser.DjangoParser()
 
 
-class GetGroups(ListView):
+class GetGroups(LoginRequiredMixin, ListView):
     template_name = "index.html"
     login_url = reverse_lazy("students:login")
 
@@ -61,7 +60,7 @@ class GetGroups(ListView):
         return HttpResponse(result)
 
 
-class CreateGroup(CreateView):
+class CreateGroup(LoginRequiredMixin, CreateView):
     template_name = "students_create.html"
     fields = "__all__"
     model = Group
@@ -89,7 +88,7 @@ class CreateGroup(CreateView):
         return HttpResponse(form_html)
 
 
-class UpdateGroup(UpdateView):
+class UpdateGroup(LoginRequiredMixin, UpdateView):
     model = Group
     template_name = "students_update.html"
     fields = "__all__"

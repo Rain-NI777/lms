@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
-from django.forms import ModelForm
-from students.models import Student
+from django.forms import ModelForm, EmailField
+from students.models import Student, CustomUser
+from django.contrib.auth.forms import UserCreationForm
 
 
 class PersonBaseForm(ModelForm):
@@ -41,3 +42,12 @@ class StudentCreateForm(PersonBaseForm):
 class StudentUpdateForm(PersonBaseForm):
     class Meta(PersonBaseForm.Meta):
         fields = ["first_name", "last_name", "email", "phone_number", "birthdate"]
+
+
+class RegistrationStudentForm(UserCreationForm):
+    email = EmailField(max_length=200,
+                       help_text="Registration without email is not possible!")
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'password1', 'password2']
