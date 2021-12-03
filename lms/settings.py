@@ -11,21 +11,21 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-38(@k3$&%j2prjz%g)(03x%(e!+ys!z&6a4smw(2^f&w*3rz1t'
+SECRET_KEY = 'django-insecure-sb0h4fv-)n1(@$*h-=rj1q7+d7&7k*baa6_*ni(t1mt)$u^x7!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -37,9 +37,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
+    'django_extensions',
+    'django_inlinecss',
+    'debug_toolbar',
+    'phonenumber_field',
+    'social_django',
+    'students',
     'groups',
     'teachers',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -49,9 +57,77 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    "social_django.middleware.SocialAuthExceptionMiddleware",
+    #"students.middlewares.SimpleMiddleware"
 ]
 
+
 ROOT_URLCONF = 'lms.urls'
+
+
+ADMIN_SHORTCUTS = [
+    {
+        'shortcuts': [
+            {
+                'url': '/',
+                'open_new_window': True,
+            },
+            {
+                'url_name': 'admin:logout',
+            },
+        ]
+    },
+    {
+        'title': 'CMS',
+        'shortcuts': [
+            {
+                'title': 'Pages',
+                'url_name': 'admin:index',
+            },
+            {
+                'title': 'Files',
+                'url_name': 'admin:index',
+            },
+            {
+                'title': 'Contact forms',
+                'icon': 'columns',
+                'url_name': 'admin:index',
+                'count_new': '3',
+            },
+            {
+                'title': 'Products',
+                'url_name': 'admin:index',
+            },
+            {
+                'title': 'Orders',
+                'url_name': 'admin:index',
+                'count_new': '12',
+            },
+        ]
+    },
+]
+
+
+ADMIN_SHORTCUTS_SETTINGS = {
+    'show_on_all_pages': True,
+    'hide_app_list': True,
+    'open_new_window': False,
+}
+
+# SESSION_COOKIE_AGE = 10
+
+AUTH_USER_MODEL = "students.CustomUser"
+# CURRENT_DOMAIN = ""
+
+SOCIAL_AUTH_FACEBOOK_KEY = "317531139806489"
+SOCIAL_AUTH_FACEBOOK_SECRET = "34371b4a2981d8aacffc703237c62c38"
+
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
+LOGIN_REDIRECT_URL = '/'
+
 
 TEMPLATES = [
     {
@@ -64,6 +140,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -81,6 +159,19 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+AUTHENTICATION_BACKENDS = (
+    "social_core.backends.facebook.FacebookOAuth2",
+    "django.contrib.auth.backends.ModelBackend"
+)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'nosov.lms@gmail.com'
+EMAIL_HOST_PASSWORD = "cpunitmruftycwmk"
+EMAIL_PORT = 587
 
 
 # Password validation
@@ -120,8 +211,34 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+    )
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+PHONENUMBER_DB_FORMAT = "NATIONAL"
+PHONENUMBER_DEFAULT_REGION = "UA"
+
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',
+    'social_core.pipeline.user.create_user',
+
+    'students.services.facebook_pipeline.cleanup_social_account',
+
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details'
+)
