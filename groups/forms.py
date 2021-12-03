@@ -1,12 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm, TextInput
-from groups.models import Group
+from groups.models import *
 
 
 class GroupBaseForm(ModelForm):
     class Meta:
-        model = Group
-        fields = ['name', 'number_of_students', 'average_score']
+        model = Course
+        fields = ['name', 'start_date', 'count_of_students', 'room']
 
         widgets = {'phone_number': TextInput(attrs={'pattern': '\d{10,14}'})}
 
@@ -21,4 +21,4 @@ class GroupCreateForm(GroupBaseForm):
 
 class GroupUpdateForm(GroupBaseForm):
     class Meta(GroupBaseForm.Meta):
-        fields = ['name', 'number_of_students', 'average_score']
+        fields = ['name', 'start_date', 'count_of_students', 'room']

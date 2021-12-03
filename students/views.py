@@ -1,15 +1,14 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect
-
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode
 from webargs import fields
-
 from students.forms import StudentCreateForm, RegistrationStudentForm
 from students.models import *
+from groups.models import *
 from students.services.emails import send_registration_email
 from students.token_generator import TokenGenerator
 from django.core.exceptions import BadRequest
@@ -19,8 +18,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
-
-
 from django.views.generic import (
     TemplateView,
     CreateView,
@@ -69,23 +66,26 @@ class ActivateUser(RedirectView):
     url = reverse_lazy('index')
 
     def get(self, request, uidb64, token, *args, **kwargs):
-        print(f"uidb64: {uidb64}")
-        print(f"token: {token}")
+        print(f'token: {token}')
 
         try:
             user_pk = force_bytes(urlsafe_base64_decode(uidb64))
-            print(f"user_pk: {user_pk}")
-            current_user = User.objects.get(pk=user_pk)
+            current_user = get_user_model().objects.get(pk=user_pk)
         except (User.DoesNotExist, ValueError, TypeError):
-            return HttpResponse("Wrong data")
+            return HttpResponse("Invalid data")
+
+        if current_user.is_active:
+            return super().get(request, *args, **kwargs)
 
         if current_user and TokenGenerator().check_token(current_user, token):
             current_user.is_active = True
             current_user.save()
 
-            login(request, current_user)
+            login(request, current_user, backend='django.contrib.auth.backends.ModelBackend')
             return super().get(request, *args, **kwargs)
-        return HttpResponse("Wrong data")
+
+        return HttpResponse("Invalid data")
+
 
 
 @parser.error_handler
@@ -107,7 +107,7 @@ class GetStudents(LoginRequiredMixin, ListView):
     )
     def get(self, request, params, *args, **kwargs):
         students = Student.objects.all().order_by("id")
-        courses = Course.objects.all()
+        groups = Course.objects.all()
 
         text_fields = ["first_name", "last_name", "email"]
 
@@ -127,7 +127,7 @@ class GetStudents(LoginRequiredMixin, ListView):
             request=request,
             template_name="students_table.html",
             context={"students_list": students,
-                    "courses_list": courses}
+                    "groups_list": groups}
         )
 
 

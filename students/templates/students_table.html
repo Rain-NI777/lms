@@ -7,7 +7,7 @@
 
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
 
-                        {% for course in courses_list %}
+                        {% for course in groups_list %}
                             <a class="dropdown-item" href="http://127.0.0.1:8000/students/?course={{ course.id }}">{{ course.name }}</a>
                         {% endfor %}
                     </div>

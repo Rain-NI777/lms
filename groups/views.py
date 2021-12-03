@@ -9,7 +9,6 @@ from webargs import fields
 from groups.forms import GroupCreateForm
 from groups.models import *
 from groups.utils import format_records
-from django.core.exceptions import BadRequest
 from webargs import djangoparser
 from webargs.djangoparser import use_args
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -43,7 +42,7 @@ class GetGroups(LoginRequiredMixin, ListView):
         location="query",
     )
     def get(self, request, params):
-        groups = Group.objects.all().order_by('-id')
+        groups = Course.objects.all().order_by('-id')
         text_fields = ['name', 'number_of_students', 'average_score']
 
         for param_name, param_value in params.items():
@@ -63,7 +62,7 @@ class GetGroups(LoginRequiredMixin, ListView):
 class CreateGroup(LoginRequiredMixin, CreateView):
     template_name = "students_create.html"
     fields = "__all__"
-    model = Group
+    model = Course
     success_url = reverse_lazy("students:list")
 
     @csrf_exempt
@@ -89,7 +88,7 @@ class CreateGroup(LoginRequiredMixin, CreateView):
 
 
 class UpdateGroup(LoginRequiredMixin, UpdateView):
-    model = Group
+    model = Course
     template_name = "students_update.html"
     fields = "__all__"
     success_url = reverse_lazy("students:list")
@@ -97,7 +96,7 @@ class UpdateGroup(LoginRequiredMixin, UpdateView):
     @csrf_exempt
     def get(self, request, pk):
 
-        group = get_object_or_404(Group, id=pk)
+        group = get_object_or_404(Course, id=pk)
 
         if request.method == 'POST':
             form = GroupCreateForm(request.POST, instance=group)

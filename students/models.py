@@ -2,24 +2,30 @@ import datetime
 import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.mail import send_mail
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinLengthValidator, RegexValidator
 from django.db import models
-from django.db.models.signals import post_save, pre_save, post_delete, \
-    post_init, post_migrate, pre_delete
-from django.dispatch import receiver
+from django.db.models.signals import post_save, pre_save, post_delete, post_init, post_migrate, pre_delete
 from phonenumber_field.modelfields import PhoneNumberField
 from faker import Faker
-from students.validators import no_elon_validator
+from students.validators import no_elon_validator, older_than_18
 from django.utils.translation import ugettext as _
 from students.managers import CustomUserManager, PeopleManager
 from django.contrib.auth import get_user_model
+from groups.models import *
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
+    ROLES = (
+        ('student', 'Student'),
+        ('teacher', 'Teacher'),
+        ('mentor', 'Mentor')
+    )
+
     email = models.EmailField(_('email address'), unique=True)
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
+    type = models.CharField(max_length=60, choices=ROLES, blank=True)
 
     is_active = models.BooleanField(
         _('active'),
@@ -29,7 +35,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             'Unselect this instead of deleting accounts.'
         ),
     )
-    photo = models.ImageField(upload_to='user_photos/', null=True, blank=True)
+
     is_staff = models.BooleanField(
         _('staff status'),
         default=False,
@@ -59,6 +65,29 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def email_user(self, subject, message, from_email=None, **kwargs):
         """Send an email to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+
+class UserProfile(models.Model):
+
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+
+    phone_number = models.CharField(
+        null=True, max_length=14, unique=True,
+        blank=True, validators=[RegexValidator("\d{10,14}")]
+    )
+    birthdate = models.DateField(null=True, blank=True, default=datetime.date.today, validators=[older_than_18])
+
+    avatar = models.ImageField(upload_to='avatar', null=True,
+                               blank=True)
+    resume = models.FileField(upload_to='resume', null=True,
+                              blank=True)
+
+    course = models.ForeignKey(
+        "groups.Course", null=True, blank=True, related_name="user_course", on_delete=models.SET_NULL
+    )
+
+    def __str__(self):
+        return f"{self.user.first_name}_{self.user.last_name}"
 
 
 class ExtendedUser(CustomUser):
@@ -95,7 +124,7 @@ class Student(Person):
                               blank=True)
 
     course = models.ForeignKey(
-        "students.Course", null=True, related_name="students",
+        "groups.Course", null=True, related_name="groups",
         on_delete=models.SET_NULL
     )
 
@@ -122,55 +151,12 @@ class Student(Person):
             st.save()
 
 
-class Course(models.Model):
-    id = models.UUIDField(
-        primary_key=True, unique=True, default=uuid.uuid4, editable=False
-    )
-    name = models.CharField(null=False, max_length=100)
-    start_date = models.DateField(null=True, default=datetime.date.today())
-    count_of_students = models.IntegerField(default=0)
-    room = models.ForeignKey(
-        "students.Room", null=True, related_name="courses",
-        on_delete=models.SET_NULL
-    )
-
-    def __str__(self):
-        return f"{self.name}"
-
-
-class Teacher(Person):
-    course = models.ManyToManyField(to="students.Course",
-                                   related_name="teachers")
-
-    def __str__(self):
-        return f"{self.email} ({self.id})"
-
-
-class Room(models.Model):
-    location = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-    )
-    color = models.ForeignKey("students.Color", null=True, on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return f"{self.location}, {self.color}"
-
-
-class Color(models.Model):
-    name = models.CharField(max_length=100, null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.name}"
-
-
 class Invite(models.Model):
     id = models.UUIDField(
         primary_key=True, unique=True, default=uuid.uuid4, editable=False
     )
     inviter_student = models.ForeignKey("students.Student", null=True, on_delete=models.SET_NULL)
-    course = models.ForeignKey("students.Course", null=True, on_delete=models.SET_NULL)
+    course = models.ForeignKey("groups.Course", null=True, on_delete=models.SET_NULL)
     invited_st_first_name = models.CharField(
         max_length=100, null=False, validators=[MinLengthValidator(2)]
     )
@@ -178,16 +164,3 @@ class Invite(models.Model):
         max_length=100, null=False, validators=[MinLengthValidator(2)]
     )
     count_invites = models.IntegerField(default=0)
-
-
-class UserProfile(models.Model):
-    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
-    phone = PhoneNumberField(blank=True, help_text="Contact phone number")
-    birthdate = models.DateField(blank=True, null=True)
-    type = models.IntegerField(blank=True, null=True)
-
-    # 1 - Student,
-    # 2 - Teacher
-    # 3 -
-    def __str__(self):
-        return f"{self.user.first_name}_{self.user.last_name}"
