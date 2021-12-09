@@ -13,16 +13,30 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
-from django.urls import path
-from students.views import hello
-from groups.models import Group
-from teachers.models import Teacher
+from django.urls import path, include
+from students.views import IndexPage, LoginStudent,\
+    LogoutStudent, RegistrationStudent, ActivateUser
+from django.conf.urls.static import static
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('hello/', hello),
-    path('groups/', Group),
-    path('teachers/', Teacher),
-]
+    path("", IndexPage.as_view(), name="index"),
+    path("admin/", admin.site.urls),
+    path("students/", include("students.urls")),
+    path("teachers/", include("teachers.urls")),
+    path("groups/", include("groups.urls")),
+    path('registration/', RegistrationStudent.as_view(), name='registration'),
+    path('login/', LoginStudent.as_view(), name='login'),
+    path('logout/', LogoutStudent.as_view(), name='logout'),
+    path('activate/<str:uidb64>/<str:token>', ActivateUser.as_view(), name='activate'),
+    path('auth/', include('social_django.urls'), name='social')
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns = [
+        path("__debug__/", include(debug_toolbar.urls)),
+    ] + urlpatterns

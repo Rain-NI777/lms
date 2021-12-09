@@ -8,8 +8,31 @@ django = "==3.2.7"
 faker = "*"
 ipython = "*"
 django-extensions = "*"
+flake8 = "*"
+flake8-builtins = "*"
+flake8-import-order = "*"
+pep8-naming = "*"
+webargs = "*"
+django-debug-toolbar = "*"
+darker = "*"
+django-crispy-forms = "*"
+django-bootstrap-v5 = "*"
+django-phonenumber-field = "*"
+phonenumbers = "*"
+pillow = "*"
+social-auth-app-django = "*"
+django-admin-shortcuts = "*"
+django-inlinecss = "*"
+django-cors-headers = "*"
+whitenoise = "*"
+django-cached-authentication-middleware = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.8"
+python_version = "3.9.1"
+
+[dev-packages]
+
+[pipenv]
+allow_prereleases = true
