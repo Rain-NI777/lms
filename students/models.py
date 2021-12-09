@@ -1,10 +1,6 @@
-import datetime
-import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.mail import send_mail
 from django.core.validators import MinLengthValidator, RegexValidator
-from django.db import models
-from django.db.models.signals import post_save, pre_save, post_delete, post_init, post_migrate, pre_delete
 from phonenumber_field.modelfields import PhoneNumberField
 from faker import Faker
 from students.validators import no_elon_validator, older_than_18
@@ -25,7 +21,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
-    type = models.CharField(max_length=60, choices=ROLES, blank=True)
 
     is_active = models.BooleanField(
         _('active'),
@@ -35,7 +30,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             'Unselect this instead of deleting accounts.'
         ),
     )
-
+    photo = models.ImageField(upload_to='user_photos/', null=True, blank=True)
     is_staff = models.BooleanField(
         _('staff status'),
         default=False,
@@ -67,29 +62,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
-class UserProfile(models.Model):
-
-    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
-
-    phone_number = models.CharField(
-        null=True, max_length=14, unique=True,
-        blank=True, validators=[RegexValidator("\d{10,14}")]
-    )
-    birthdate = models.DateField(null=True, blank=True, default=datetime.date.today, validators=[older_than_18])
-
-    avatar = models.ImageField(upload_to='avatar', null=True,
-                               blank=True)
-    resume = models.FileField(upload_to='resume', null=True,
-                              blank=True)
-
-    course = models.ForeignKey(
-        "groups.Course", null=True, blank=True, related_name="user_course", on_delete=models.SET_NULL
-    )
-
-    def __str__(self):
-        return f"{self.user.first_name}_{self.user.last_name}"
-
-
 class ExtendedUser(CustomUser):
     people = PeopleManager()
 
@@ -99,6 +71,22 @@ class ExtendedUser(CustomUser):
 
     def some_action(self):
         print(self.username)
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    phone_number = models.CharField(
+        null=True, max_length=14, unique=True,
+        blank=True, validators=[RegexValidator("\d{10,14}")]
+    )
+    birthdate = models.DateField(null=True, blank=True, default=datetime.date.today, validators=[older_than_18])
+    avatar = models.ImageField(upload_to='avatar', null=True, blank=True)
+    resume = models.FileField(upload_to='resume', null=True, blank=True)
+    course = models.ForeignKey("groups.Course", null=True, blank=True, related_name="user_course",
+                               on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"{self.user.first_name}_{self.user.last_name}"
 
 
 class Person(models.Model):
@@ -124,7 +112,7 @@ class Student(Person):
                               blank=True)
 
     course = models.ForeignKey(
-        "groups.Course", null=True, related_name="groups",
+        "groups.Course", null=True, related_name="students",
         on_delete=models.SET_NULL
     )
 

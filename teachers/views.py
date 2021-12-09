@@ -6,7 +6,7 @@ from webargs import djangoparser
 from webargs.djangoparser import use_args
 from django.core.exceptions import BadRequest
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from teachers.forms import TeacherBaseForm
 from teachers.forms import TeacherCreateForm
@@ -31,7 +31,7 @@ def handle_error(error):
 
 class GetTeachers(LoginRequiredMixin, ListView):
     template_name = "index.html"
-    login_url = reverse_lazy("students:login")
+    login_url = reverse_lazy("login")
 
     @use_args(
         {

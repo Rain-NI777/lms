@@ -1,10 +1,10 @@
 from django.utils.html import format_html
 from django.contrib import admin
+
 from students.models import Student, UserProfile, \
     CustomUser
 from teachers.models import Teacher
-from groups.models import Course, Color, Room
-
+from groups.models import Course
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
@@ -53,7 +53,6 @@ class TeacherAdmin(admin.ModelAdmin):
             return format_html(f"<p>0</p>")
 
 
+
 admin.site.register(UserProfile)
-admin.site.register(Room)
-admin.site.register(Color)
 admin.site.register(CustomUser)

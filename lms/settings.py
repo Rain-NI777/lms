@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-sb0h4fv-)n1(@$*h-=rj1q7+d7&7k*baa6_*ni(t1mt)$u^x7!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -59,8 +59,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    "social_django.middleware.SocialAuthExceptionMiddleware",
-    #"students.middlewares.SimpleMiddleware"
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 
@@ -121,8 +120,12 @@ ADMIN_SHORTCUTS_SETTINGS = {
 AUTH_USER_MODEL = "students.CustomUser"
 # CURRENT_DOMAIN = ""
 
-SOCIAL_AUTH_FACEBOOK_KEY = "317531139806489"
-SOCIAL_AUTH_FACEBOOK_SECRET = "34371b4a2981d8aacffc703237c62c38"
+
+SOCIAL_AUTH_GITHUB_KEY = "7c186eaea7ee9b48c82e"
+SOCIAL_AUTH_GITHUB_SECRET = "90365284e8cac0d37cbfa92f257b784ffcaee414"
+
+#SOCIAL_AUTH_FACEBOOK_KEY = ""
+#SOCIAL_AUTH_FACEBOOK_SECRET = ""
 
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
@@ -162,17 +165,18 @@ DATABASES = {
 
 
 AUTHENTICATION_BACKENDS = (
-    "social_core.backends.facebook.FacebookOAuth2",
-    "django.contrib.auth.backends.ModelBackend"
+    'django.contrib.auth.backends.ModelBackend',
+    #'social_core.backends.facebook.FacebookOAuth2',
+    'social_core.backends.github.GithubOAuth2',
+
 )
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'nosov.lms@gmail.com'
-EMAIL_HOST_PASSWORD = "cpunitmruftycwmk"
+EMAIL_HOST_USER = 'lms.nosov@gmail.com'
+EMAIL_HOST_PASSWORD = "cqmjwtzowykqnkoc"
 EMAIL_PORT = 587
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -192,7 +196,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -205,7 +208,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -235,9 +237,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.social_auth.associate_by_email',
     'social_core.pipeline.user.create_user',
-
-    'students.services.facebook_pipeline.cleanup_social_account',
-
+    'students.services.github_oauth.cleanup_social_account',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details'

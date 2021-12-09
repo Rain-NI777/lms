@@ -31,6 +31,7 @@ urlpatterns = [
     path('login/', LoginStudent.as_view(), name='login'),
     path('logout/', LogoutStudent.as_view(), name='logout'),
     path('activate/<str:uidb64>/<str:token>', ActivateUser.as_view(), name='activate'),
+    path('auth/', include('social_django.urls'), name='social')
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

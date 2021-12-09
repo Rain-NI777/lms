@@ -3,6 +3,7 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+
 from students.token_generator import TokenGenerator
 
 
@@ -22,4 +23,4 @@ def send_registration_email(request, user_instance):
                          to=[user_instance.email],
                          )
     email.content_subtype = 'html'
-    email.send(fail_silently=False)
+    email.send(fail_silently=True)
