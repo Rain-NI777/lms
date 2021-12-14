@@ -27,11 +27,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
-
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'material',
+    'material.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'phonenumber_field',
     'social_django',
+    'admin_shortcuts',
     'students',
     'groups',
     'teachers',
@@ -74,6 +75,7 @@ ADMIN_SHORTCUTS = [
                 'open_new_window': True,
             },
             {
+
                 'url_name': 'admin:logout',
             },
         ]
@@ -124,8 +126,6 @@ AUTH_USER_MODEL = "students.CustomUser"
 SOCIAL_AUTH_GITHUB_KEY = "7c186eaea7ee9b48c82e"
 SOCIAL_AUTH_GITHUB_SECRET = "90365284e8cac0d37cbfa92f257b784ffcaee414"
 
-#SOCIAL_AUTH_FACEBOOK_KEY = ""
-#SOCIAL_AUTH_FACEBOOK_SECRET = ""
 
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
@@ -152,7 +152,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'lms.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -166,7 +165,6 @@ DATABASES = {
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    #'social_core.backends.facebook.FacebookOAuth2',
     'social_core.backends.github.GithubOAuth2',
 
 )

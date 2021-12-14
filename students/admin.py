@@ -1,10 +1,10 @@
 from django.utils.html import format_html
 from django.contrib import admin
-
 from students.models import Student, UserProfile, \
     CustomUser
 from teachers.models import Teacher
 from groups.models import Course
+
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
@@ -21,8 +21,8 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'email',
-                    'course_count', 'list_courses']
+    list_display = ['first_name', 'last_name', 'email']
+
     fieldsets = (
         ("Personal info", {
             'fields': ('first_name', 'last_name',)
@@ -33,12 +33,11 @@ class TeacherAdmin(admin.ModelAdmin):
         }),
     )
 
-
     def list_courses(self, obj):
         if obj.course:
             courses = obj.course.all()
             links = [
-                f"<a href='http://127.0.0.1:8000/admin/students/course/{course.pk}/change/'>{course.name}</p>"
+                f"<a href='http://127.0.0.1:8000/admin/groups/course/{course.pk}/change/'>{course.name}</p>"
                 for course in courses]
 
             return format_html(f"{''.join(links)}")
@@ -51,7 +50,6 @@ class TeacherAdmin(admin.ModelAdmin):
             return format_html(f"<p>{courses}</p>")
         else:
             return format_html(f"<p>0</p>")
-
 
 
 admin.site.register(UserProfile)
